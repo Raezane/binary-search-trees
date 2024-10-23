@@ -2,8 +2,14 @@ const node = function(value) {
   let data = value;
   let left = null;
   let right = null;
-  
+ 
   return {data, left, right}
+}
+
+const tree = function(arr, sortedUniques) {
+  let root = buildTree(arr, sortedUniques)
+
+  return {root}
 }
 
 function findSuccessor(curr) {
@@ -15,24 +21,28 @@ function findSuccessor(curr) {
 }
 
 function addToQueue(queue, current) {
-    
+   
   console.log(current.data)
 
   if (current.left !== null) {
     queue.push(current.left)
     }
-  
+ 
   if (current.right !== null) {
     queue.push(current.right)
     }
-  
+ 
   if (queue.length > 0) return addToQueue(queue, queue.shift())
-  
+ 
   return
 }  
 
 function logger(node) {
   console.log(node.data)
+}
+
+function arrayPusher(node, arr) {
+  arr.push(node.data)
 }
 
 function checkRootAndCallback(callback, root) {
@@ -41,175 +51,239 @@ function checkRootAndCallback(callback, root) {
   if (root == null) return null
 }
 
-const tree = function(arr) {
-  let root = buildTree(arr)
-  
-  const deleteItem = function(value) {
+const insert = function(value) {
+  let newNode = node(value)
 
-    function removalRec(root, value) {
+  if (builtTree.root == null) {
+    builtTree.root = newNode
+    return
+  }
+  
+  function recTree(root, newNode) {
+    
+    if (root.left == null && newNode.data < root.data) {
+      root.left = newNode
+      return
+    }
       
-      if (root == null) return root
+    else if (root.right == null && newNode.data > root.data) {
+      root.right = newNode
+      return
+    }
+
+    if (newNode.data < root.data) {
+      recTree(root.left, newNode)
+    } else if (newNode.data > root.data) {
+        recTree(root.right, newNode)
+      }
+    
+  } recTree(builtTree.root, newNode)
+}
+ 
+const deleteItem = function(value) {
+
+  function removalRec(root, value) {
+    
+    if (root == null) return root
+    
+    if (value < root.data) {
+      root.left = removalRec(root.left, value)  
+    } else if (value > root.data) {
+        root.right = removalRec(root.right, value)  
+      }
       
-      if (value < root.data) {
-        root.left = removalRec(root.left, value)  
-      } else if (value > root.data) {
-          root.right = removalRec(root.right, value)  
-        } 
+      else {
+        if (root.right == null && root.left == null) return null
+        
+        if (root.left == null) return root.right
+        if (root.right == null) return root.left
         
         else {
-          if (root.right == null && root.left == null) return null
-          
-          if (root.left == null) return root.right
-          if (root.right == null) return root.left
-          
-          else {
-            let successor = findSuccessor(root)
-            root.data = successor.data
-            root.right = removalRec(root.right, successor.data);
-            }
-          
-          
-        } return root
-    }
-    removalRec(root, value)
+          let successor = findSuccessor(root)
+          root.data = successor.data
+          root.right = removalRec(root.right, successor.data);
+          }
+        
+        
+      } return root
   }
-  
-  const find = function(value) {
-   
-    function findRec(root, value) {
-      if (value > root.data) return findRec(root.right, value)
-      else if (value > root.data) return findRec(root.left, value)
-      else return root
-      }
-     
-    return findRec(root, value)
-  }
+  removalRec(builtTree.root, value)
+}
 
-  const levelOrder = function(callback) {
-    checkRootAndCallback(callback, root)
-    
-    let q = [];
-    let current = root
-
-    //add the first single node and visit it
-    q.push(current)
-    current = q.shift()
-    let levelOrderNodes = callback(q, current)
-    return levelOrderNodes
-  }
+const find = function(value) {
   
-  const inOrder = function(callback) {
-    checkRootAndCallback(callback, root)
-  
-    let current = root;
-  
-    function inOrderRec(current) {
-      if (current == null) return 
-
-      inOrderRec(current.left)
-      callback(current)
-      inOrderRec(current.right)
+  function findRec(root, value) {
+    if (value > root.data) return findRec(root.right, value)
+    else if (value < root.data) return findRec(root.left, value)
+    else return root
     }
     
-    inOrderRec(current)
+  return findRec(builtTree.root, value)
+}
+
+const levelOrder = function(callback) {
+  checkRootAndCallback(callback, buildTree.root)
+  
+  let q = [];
+  let current = builtTree.root
+
+  //add the first single node and visit it
+  q.push(current)
+  current = q.shift()
+  let levelOrderNodes = callback(q, current)
+  return levelOrderNodes
+}
+
+const inOrder = function(callback) {
+  checkRootAndCallback(callback, builtTree.root)
+
+  let current = builtTree.root;
+
+  //create an array for storing the values so that we may rebalance the tree if unbalanced
+  let arr = []
+
+  function inOrderRec(current) {
+    if (current == null) return
+
+    inOrderRec(current.left)
+    callback(current, arr)
+    inOrderRec(current.right)
   }
   
-  const preOrder = function(callback) {
-    checkRootAndCallback(callback, root)
+  inOrderRec(current)
+  return arr
+}
+
+const preOrder = function(callback) {
+  checkRootAndCallback(callback, builtTree.root)
+  
+  let current = builtTree.root;
+
+  function preOrderRec(current) {
+    if (current == null) return
+
+    callback(current)
+    preOrderRec(current.left)
+    preOrderRec(current.right)
+  }
     
-    let current = root;
-  
-    function preOrderRec(current) {
-      if (current == null) return 
+  preOrderRec(current)
+}
 
-      callback(current)
-      preOrderRec(current.left)
-      preOrderRec(current.right)
-    }
-      
-    preOrderRec(current)
-  }
+const postOrder = function(callback) {
+  checkRootAndCallback(callback, builtTree.root)
   
-  const postOrder = function(callback) {
-    checkRootAndCallback(callback, root)
+  let current = builtTree.root;
+
+  function postOrderRec(current) {
+    if (current == null) return
+
+    postOrderRec(current.left)
+    postOrderRec(current.right)
+    callback(current)
+  }
     
-    let current = root;
+  postOrderRec(current)
+}
+ 
+const height = function(node) {
   
-    function postOrderRec(current) {
-      if (current == null) return 
+  let current = node;
 
-      postOrderRec(current.left)
-      postOrderRec(current.right)
-      callback(current)
-    }
-      
-    postOrderRec(current)
-  }
+  function heightRec(current) {
+    if (current == null) return -1
   
-  const height = function(node) { 
+    let leftHeight = heightRec(current.left)
+
+    let rightHeight = heightRec(current.right)
+
+    return Math.max(leftHeight, rightHeight) +1
+  }
     
-    let current = node;
+  return heightRec(current)
   
-    function heightRec(current) {
-      if (current == null) return -1
+}
+ 
+const depth = function(node) {
+
+  let current = builtTree.root;
+  let depthVal = 0
+
+  function depthRec(current, node, depthVal) {
+    if (current == null) return -1
+    if (current.data == node.data) return depthVal
+
+    if (current.data > node.data) return depthRec(current.left, node, depthVal += 1)
+    else if (current.data < node.data) return depthRec(current.right, node, depthVal += 1)
+  }
     
-      let leftHeight = heightRec(current.left)
+  return depthRec(current, node, depthVal)
+}
+ 
+const isBalanced = function() {
+  let current = builtTree.root;
 
-      let rightHeight = heightRec(current.right)
+  function isBalancedRec(current) {
+    if (current == null) return true
+  
+    let leftHeight = height(current.left)
 
-      return Math.max(leftHeight, rightHeight) +1
-    }
-      
-    return heightRec(current)
+    let rightHeight = height(current.right)
+
+    if (Math.abs(leftHeight - rightHeight) <= 1 &&
+    isBalancedRec(current.right) && isBalancedRec(current.left)) return true
+
+    return false
+  }
     
-  }
-  
-  const depth = function(node) {
-  }
-  
-  const isBalanced = function() {
-  }
-  
-  const rebalance = function() {
-  }
-  
-  return {
-    root, 
-    deleteItem, 
-    find, 
-    levelOrder, 
-    inOrder, 
-    preOrder, 
-    postOrder, 
-    height
-    }
-  }
+  return isBalancedRec(current)
+}
 
-
-  const buildTree = function(arr) {
-    // first remove duplicates in case there are any
-    let onlyUniques = [...new Set(arr)];
-    // ..then sort them
-    let sortedArr = onlyUniques.sort((a, b) => a - b)
-
-    function construct(arr, start, end) {
-
-      if (start > end) return null
-
-      let mid = Math.floor((start+end) / 2)
-      let root = node(arr[mid])
-
-      root.left = construct(arr, start, mid-1)
-      root.right = construct(arr, mid+1, end)
-
-      return root
-    }
-
-    let tree = construct(sortedArr, 0, sortedArr.length-1)
-    return tree
+const rebalance = function() {
+  if (isBalanced() == false) {
+    //inOrder returns numbers in ascending order
+    let unBalancedNums = inOrder(arrayPusher)
+    builtTree = tree(unBalancedNums, true)
+  } else throw new Error('Tree is already balanced!')
 }
 
 
+
+const buildTree = function(arr, uniquesAndSorted) {
+
+  /* here we check if the given array is already sorted and contains only uniques. If not,
+  then remove duplicates and sort */
+  if (uniquesAndSorted == false) {
+    // first remove duplicates in case there are any
+    arr = [...new Set(arr)];
+    // ..then sort them
+    arr = arr.sort((a, b) => a - b)
+  }
+
+  function construct(arr, start, end) {
+
+    if (start > end) return null
+
+    let mid = Math.floor((start+end) / 2)
+    let root = node(arr[mid])
+
+    root.left = construct(arr, start, mid-1)
+    root.right = construct(arr, mid+1, end)
+
+    return root
+  }
+
+  let tree = construct(arr, 0, arr.length-1)
+  return tree
+}
+
+function generateNums(num) {
+  let numarr = []
+  for (let i = 0; i < num; i++) {
+    numarr.push(Math.floor(Math.random() * 100))
+  }
+  return numarr
+}
 
 const prettyPrint = (node, prefix = "", isLeft = true) => {
   if (node === null) {
@@ -224,6 +298,19 @@ const prettyPrint = (node, prefix = "", isLeft = true) => {
   }
 };
 
-let builtTree = tree([19, 5, 8, 9, 2, 15, 11, 12, 99, 27, 22, 67, 1, 86, 6])
+let builtTree = tree(generateNums(9), false)
+
 prettyPrint(builtTree.root)
-builtTree.height(builtTree.root)
+
+insert(105)
+insert(101)
+insert(110)
+insert(100)
+insert(109)
+insert(109)
+
+prettyPrint(builtTree.root)
+console.log(isBalanced()) // returns false now that we inserted several numbers without balancing
+
+rebalance()
+prettyPrint(builtTree.root)
